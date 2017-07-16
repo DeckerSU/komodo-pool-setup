@@ -149,14 +149,324 @@ Welcome to the Komodo Wallet GUI:
 
 Perfect ... Next step we will look how to setup our own local pool for KMD mining.
 
+Also, i was added a small [autorun.sh](./autorun.sh)  script in this repo that allows you to run all needed software. Script does the following:
+
+* Correctly stops Komodo Daemon if it's already running
+* Starts komodod again
+* Waiting for loading blocks
+* Starts Komodo GUI Wallet 
+
+It can be placed in Startup Applications menu in Ubuntu.
+
+![](./image_10.png) 
+
+Remember that you **shouldn't** close komodod's terminal window by pressing "cross", instead of it, if you need to stop komodo daemon and power off the machine you should type in terminal:
+
+	~/komodo/src/komodo-cli stop
+	
+And wait until komodod fineshed his work. Only after that you can power off or reboot the machine.
+
 ## Setup a local pool ...
 
-To be continued ...
+Now it's time to setup our local pool for Komodo (KMD) using equihash algoritm. There are several ways how to do this, but we will choose most simpliest. We will use [kmd-nomp](https://github.com/xRobeSx/kmd-nomp) software from [xRobeSx](https://github.com/xRobeSx) repository. It's ready to use with small fixes and additions. Let's do it:
+
+	cd ~
+	sudo apt-get update
+	sudo apt-get install build-essential pkg-config libc6-dev m4 g++-multilib autoconf libtool ncurses-dev unzip git python zlib1g-dev wget bsdmainutils automake libboost-all-dev libssl-dev libprotobuf-dev protobuf-compiler libqt4-dev libqrencode-dev libdb++-dev ntp ntpdate vim software-properties-common curl libcurl4-gnutls-dev cmake clang
+	sudo apt-get install libsodium-dev npm redis-server
+	sudo npm install n -g
+	sudo n stable
+	git clone https://github.com/xRobeSx/kmd-nomp
+	cd ~/kmd-nomp/
+	npm update
+	npm install
+	sudo service redis-server restart # restart redis server (redis is a database for your pool)
+	
+Now everything is almost done and we need to change some pool files and make configs.
+
+	gedit ~/kmd-nomp/config.json
+	
+This will open config file named config.json for edit. Put the following lines inside and save it:
+
+	{
+	    "logLevel": "debug",
+	    "logColors": true,
+	
+	    "cliPort": 17117,
+	
+	    "clustering": {
+	        "enabled": false,
+	        "forks": "auto"
+	    },
+	
+	    "defaultPoolConfigs": {
+	        "blockRefreshInterval": 30,
+	        "jobRebroadcastTimeout": 55,
+	        "connectionTimeout": 600,
+	        "emitInvalidBlockHashes": false,
+	        "validateWorkerUsername": true,
+	        "tcpProxyProtocol": false,
+	        "banning": {
+	            "enabled": true,
+	            "time": 600,
+	            "invalidPercent": 50,
+	            "checkThreshold": 500,
+	            "purgeInterval": 300
+	        },
+	        "redis": {
+	            "host": "127.0.0.1",
+	            "port": 6379
+	        }
+	    },
+	
+	    "website": {
+	        "enabled": true,
+	        "host": "0.0.0.0",
+	        "port": 8080,
+	        "stratumHost": "0.0.0.0",
+	        "stats": {
+	            "updateInterval": 30,
+	            "historicalRetention": 43200,
+	            "hashrateWindow": 300
+	        },
+	        "adminCenter": {
+	            "enabled": false,
+	            "password": "password"
+	        }
+	    },
+	
+	    "redis": {
+	        "host": "127.0.0.1",
+	        "port": 6379
+	    },
+	
+	    "switching": {
+	        "switch1": {
+	            "enabled": false,
+	            "algorithm": "sha256",
+	            "ports": {
+	                "3333": {
+	                    "diff": 10,
+	                    "varDiff": {
+	                        "minDiff": 16,
+	                        "maxDiff": 512,
+	                        "targetTime": 15,
+	                        "retargetTime": 90,
+	                        "variancePercent": 30
+	                    }
+	                }
+	            }
+	        },
+	        "switch2": {
+	            "enabled": false,
+	            "algorithm": "scrypt",
+	            "ports": {
+	                "4444": {
+	                    "diff": 10,
+	                    "varDiff": {
+	                        "minDiff": 16,
+	                        "maxDiff": 512,
+	                        "targetTime": 15,
+	                        "retargetTime": 90,
+	                        "variancePercent": 30
+	                    }
+	                }
+	            }
+	        },
+	        "switch3": {
+	            "enabled": false,
+	            "algorithm": "x11",
+	            "ports": {
+	                "5555": {
+	                    "diff": 0.001,
+	                    "varDiff": {
+	                        "minDiff": 0.001,
+	                        "maxDiff": 1, 
+	                        "targetTime": 15, 
+	                        "retargetTime": 60, 
+	                        "variancePercent": 30 
+	                    }
+	                }
+	            }
+	        }
+	    },
+	
+	    "profitSwitch": {
+	        "enabled": false,
+	        "updateInterval": 600,
+	        "depth": 0.90,
+	        "usePoloniex": true,
+	        "useCryptsy": true,
+	        "useMintpal": true,
+	        "useBittrex": true
+	    }
+	}
+
+Pay attention that the **0.0.0.0** in Host and stratumHost parameters means that the pool will response on any interface, you can use your real eth interface ip here or hostname domain (if it resolves on ip).
+
+Same way edit coin config file:
+
+	gedit ~/kmd-nomp/coins/komodo.json
+	
+And put into it following:
+
+	{
+	    "name": "komodo",
+	    "symbol": "kmd",
+	    "algorithm": "equihash",
+	    "txfee": 0.00005
+	}
+
+After edit the pool config file:
+
+	gedit ~/kmd-nomp/pool_configs/komodo.json 
+
+And fill it:		
+
+	{
+	    "enabled": true,
+	    "coin": "komodo.json",
+	
+	    "address": "** FILL IT **",
+	    "_comment_address": "a transparent address to send coinbase rewards to and to transfer to zAddress.",
+	
+	    "zAddress": "",
+	    "_comment_zAddress": "shielding not required in komodo, not used",
+	
+	    "tAddress": "** FILL IT **",
+	    "_comment_tAddress": "set to same as pools komodo address; ex, RSXGTHQSqwcMw1vowKfEE7sQ8fAmv1tmso",
+	
+	    "walletInterval": 5,
+	    "_comment_walletInterval": "Used to cache komodo coin stats, shielding not performed.",
+	
+	    "rewardRecipients": {
+	    },
+	
+	    "tlsOptions": {
+	        "enabled": false,
+	        "serverKey":"",
+	        "serverCert":"",
+	        "ca":""
+	    },
+	
+	    "paymentProcessing": {
+		"minConf": 10,
+	        "enabled": false,
+	        "paymentMode": "prop",
+	        "_comment_paymentMode":"prop, pplnt",
+	        "paymentInterval": 600,
+	        "_comment_paymentInterval": "Interval in seconds to check and perform payments.",
+	        "minimumPayment": 0.1,
+	        "maxBlocksPerPayment": 3,
+	        "daemon": {
+	            "host": "127.0.0.1",
+	            "port": 7771,
+	            "user": "bitcoinrpc",
+	            "password": "password"
+	        }
+	    },
+	 
+	"ports": {
+	        "7780": {
+	            "diff": 0.3,
+		    "tls": false,
+	            "varDiff": {
+	                "minDiff": 0.2,
+	                "maxDiff": 16,
+	                "targetTime": 15,
+	                "retargetTime": 60,
+	                "variancePercent": 30
+	            }
+	        },
+		"7777": { 
+	             "tls": false,
+		     "diff": 2 
+	        },
+		"7779": { 
+	             "tls": false,
+		     "diff": 3 
+	        },
+		"7776": { 
+	             "tls": false,
+		     "diff": 10 
+	        }
+	    },
+	
+	"daemons": [
+	        {
+	            "host": "127.0.0.1",
+	            "port": 7771,
+	            "user": "bitcoinrpc",
+	            "password": "password"
+	        }
+	    ],
+	
+	    "p2p": {
+	        "enabled": false,
+	        "host": "127.0.0.1",
+	        "port": 19333,
+	        "disableTransactions": true
+	    }
+	
+	
+	}
+	
+Here pay attention that address and tAddress must be filled with existing address in your KMD wallet. To list all addresses you can use KMD GUI wallet or following command:
+
+	~/komodo/src/komodo-cli getaddressesbyaccount ""
+	
+Make a patches:
+
+	cd ~/kmd-nomp
+	wget https://raw.githubusercontent.com/DeckerSU/komodo-pool-setup/master/0001-website.js-patch-to-avoid-DeprecationWarning-about-n.patch
+	wget https://raw.githubusercontent.com/DeckerSU/komodo-pool-setup/master/0002-fix-block-adding-to-pending-blocks.patch
+	git apply 0001-website.js-patch-to-avoid-DeprecationWarning-about-n.patch
+	git apply 0002-fix-block-adding-to-pending-blocks.patch
+	
+Pay no attention to warnings about whitespaces. Now all is complete and we can start our pool:
+
+		cd ~/kmd-nomp
+		sudo service redis-server restart # in additional cases we need to restart redis, skip this line if all starts fine (!)
+		npm start
+		
+Congratulatuions ;) We have setup a pool for mining Komodo. Simple, right? If i have this [great guide](https://github.com/DeckerSU/komodo-pool-setup/blob/master/README.md) at begin, it would save my time. Nowhere described some parameters from configs above, for example, if we miss "tls": false option when configure each pool port - miners will not connect to your pool. This moment was hard for me, but not for you ;)
+
+Let's look on running pool console:
+
+![](./image_11.png) 	
+	
+Open new terminal (Ctrl-Alt-T) and look on ifconfig command output (i assume that in your network exists working router with DHCP server, and you setup LAN card as "Bridge" in your VirtualBox LAN settings for this VM):
+
+![](./image_12.png) 
+
+172.17.112.32 here - is the your VM IP address. Open it in browser (add :8080 to IP in address string), and you should see the pool's web interface:
+
+![](./image_13.png) 
+
+Now time to connect our miners ;) Setup your lucky GPU miner and start it. For Claymore's ZCash AMD GPU Miner you should use the following: 
+
+	ZecMiner64.exe -zpool pool_host_name_or_ip:7780 -zwal "Your_KMD_Wallet" -zpsw x -allpools 1 -i 5			
+	
+For [ccminer-equihash](https://github.com/tpruvot/ccminer) following:
+
+	./ccminer -a equihash -o stratum+tcp://pool_host_name_or_ip:7780 -u "Your_KMD_Wallet"
+	
+In pool console we will see accepted shares and their diffs:
+
+![](./image_14.png) 
+
+17.99881044 is a founded share diff. If accepted share diff will be greater than a current block diff - you found a block (!) and get 3 KMD on your pool wallet. Current block diff showed when we start a pool. For example for block height 408706, block diff was 11150.028530142. My GTX 1060 GPU was found a share with diff 17, if diff of founded share will greater that 11150, for example i found share with diff 12000 - i will found a block.
+
+Good luck in mining! Let the fortune smile to you!
 
 ## Downloads 
 
-...
+... Will be available soon ...
 
 ## Donate
 
 * KMD: [RDecker69MM5dhDBosUXPNTzfoGqxPQqHu](http://kmd.explorer.supernet.org/address/RDecker69MM5dhDBosUXPNTzfoGqxPQqHu) 
+
+## Credits & greetz
+
+* [@kolo](https://sprnt.slack.com/messages/@kolo)
