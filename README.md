@@ -49,7 +49,7 @@ Now we can launch Midnight Commander and Far2l from applications menu, it can be
 
 ## Let's setup Komodo
 
-**1. ** Open Terminal window (Ctrl-Alt-T) and successively type following:
+**1.** Open Terminal window (Ctrl-Alt-T) and successively type following:
 
 	sudo apt install build-essential pkg-config libc6-dev libevent-dev m4 g++-multilib autoconf libtool libncurses5-dev unzip git python zlib1g-dev wget bsdmainutils automake libboost-all-dev libssl-dev libprotobuf-dev protobuf-compiler libqt4-dev libqrencode-dev libdb++-dev ntp ntpdate
 	sudo apt install libcurl4-gnutls-dev 
@@ -152,3 +152,11 @@ Perfect ... Next step we will look how to setup our own local pool for KMD minin
 ## Setup a local pool ...
 
 To be continued ...
+
+## Downloads 
+
+...
+
+## Donate
+
+* KMD: [RDecker69MM5dhDBosUXPNTzfoGqxPQqHu](http://kmd.explorer.supernet.org/address/RDecker69MM5dhDBosUXPNTzfoGqxPQqHu) 
