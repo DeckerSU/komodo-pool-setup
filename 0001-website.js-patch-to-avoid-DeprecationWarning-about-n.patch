@@ -1,0 +1,42 @@
+From 73ecabe975df479a01e694548018c5a6791c9427 Mon Sep 17 00:00:00 2001
+From: DeckerSU <support@decker.su>
+Date: Mon, 17 Jul 2017 00:51:46 +0300
+Subject: [PATCH] website.js patch to avoid DeprecationWarning about node-watch
+ 0.5.0
+
+---
+ libs/website.js | 16 +++++++++++-----
+ 1 file changed, 11 insertions(+), 5 deletions(-)
+
+diff --git a/libs/website.js b/libs/website.js
+index b570c24..5068b14 100644
+--- a/libs/website.js
++++ b/libs/website.js
+@@ -94,13 +94,19 @@ module.exports = function(logger){
+     };
+ 
+ 
+-    //If an html file was changed reload it
+-    watch('website', function(filename){
+-        var basename = path.basename(filename);
++    // if an html file was changed reload it
++    /* requires node-watch 0.5.0 or newer */
++    watch(['./website', './website/pages'], function(evt, filename){
++        var basename;
++        // support older versions of node-watch automatically
++        if (!filename && evt)
++            basename = path.basename(evt);
++        else
++            basename = path.basename(filename);
++        
+         if (basename in pageFiles){
+-            console.log(filename);
+             readPageFiles([basename]);
+-            logger.debug(logSystem, 'Server', 'Reloaded file ' + basename);
++            logger.special(logSystem, 'Server', 'Reloaded file ' + basename);
+         }
+     });
+ 
+-- 
+2.7.4
+
