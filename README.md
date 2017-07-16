@@ -459,6 +459,8 @@ In pool console we will see accepted shares and their diffs:
 
 Good luck in mining! Let the fortune smile to you!
 
+**p.s.** Pull requests are welcome. If you found some mistakes (includes grammar) or your mother language is english - you can help me make this guide more beatiful.
+
 ## Downloads 
 
 ... Will be available soon ...
@@ -469,4 +471,9 @@ Good luck in mining! Let the fortune smile to you!
 
 ## Credits & greetz
 
-* [@kolo](https://sprnt.slack.com/messages/@kolo)
+* [Komodo Platform](https://komodoplatform.com/) 
+* [@pondsea](https://sprnt.slack.com/messages/@pondsea) for his 290 KMD donate.
+* [@kolo](https://sprnt.slack.com/messages/@kolo) for my interest to KMD.
+* [@ruslan_3_](https://sprnt.slack.com/messages/@ruslan_3_) for his helping with test the pool and his GPU rigs.
+
+
