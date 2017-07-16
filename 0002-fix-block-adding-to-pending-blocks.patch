@@ -1,0 +1,29 @@
+From 07445197beaa81e0ddc2a50c272db005aa36726a Mon Sep 17 00:00:00 2001
+From: DeckerSU <support@decker.su>
+Date: Mon, 17 Jul 2017 00:56:12 +0300
+Subject: [PATCH] fix block adding to pending blocks (we haven't Round.Reward)
+
+---
+ libs/shareProcessor.js | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/libs/shareProcessor.js b/libs/shareProcessor.js
+index 28ea554..a96d4d6 100644
+--- a/libs/shareProcessor.js
++++ b/libs/shareProcessor.js
+@@ -86,7 +86,11 @@ module.exports = function(logger, poolConfig){
+ 
+         if (isValidBlock){
+             redisCommands.push(['rename', coin + ':shares:roundCurrent', coin + ':shares:round' + shareData.height]);
+-            redisCommands.push(['sadd', coin + ':blocksPending', [shareData.blockHash, shareData.txHash, shareData.height, shareData.worker, Round.Reward, dateNow].join(':')]);
++	    /* here some people was commented line with 'sadd' */	
++            /* redisCommands.push(['sadd', coin + ':blocksPending', [shareData.blockHash, shareData.txHash, shareData.height, shareData.worker, Round.Reward, dateNow].join(':')]); */
++
++            redisCommands.push(['sadd', coin + ':blocksPending', [shareData.blockHash, shareData.txHash, shareData.height, shareData.worker, dateNow].join(':')]);
++
+             redisCommands.push(['hincrby', coin + ':stats', 'validBlocks', 1]);
+         }
+         else if (shareData.blockHash){
+-- 
+2.7.4
+
